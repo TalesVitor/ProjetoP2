@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mensagens Recebidas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="css/default.css" />
+  </head>
+
+  <body>
+    <div class="page">
+      <header>
+        <h1>Mensagens Recebidas</h1>
+      </header>
+
+      <main>
+        <table border="1" width="100%" id="tabelaMensagens">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Mensagem</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </main>
+    </div>
+
+    <script src="js/jquery-3.6.4.min.js"></script>
+    <script src="js/api.js"></script>
+
+    <script>
+      function carregarMensagens() {
+        var retorno = obterMensagens();
+
+        var mensagens = retorno.mensagens || retorno;
+
+
+        if (!localStorage.getItem("mensagens")) {
+          localStorage.setItem("mensagens", JSON.stringify(mensagens));
+        }
+
+
+        var mensagensSalvas = JSON.parse(localStorage.getItem("mensagens"));
+        var tbody = $("#tabelaMensagens tbody");
+
+        tbody.html("");
+
+        mensagensSalvas.forEach(function (msg, index) {
+          var negrito = msg.visualizada ? "normal" : "bold";
+          var statusTexto = msg.visualizada ? "Visualizada" : "Não Visualizada";
+
+          var linha = `
+            <tr style="font-weight:${negrito}">
+              <td>${msg.nome}</td>
+              <td>${msg.email}</td>
+              <td>${msg.mensagem}</td>
+              <td>${statusTexto}</td>
+              <td>
+                <button class="btn-visualizar" onclick="marcarVisualizada(${index})">
+                👁 Visualizar
+                </button>
+
+                <button class="btn-excluir" onclick="excluirMensagem(${index})">
+                🗑 Excluir
+                </button>
+
+              </td>
+            </tr>
+          `;
+
+          tbody.append(linha);
+        });
+      }
+
+      function marcarVisualizada(index) {
+        var confirmar = confirm("Deseja marcar esta mensagem como visualizada?");
+        if (confirmar) {
+          var mensagensSalvas = JSON.parse(localStorage.getItem("mensagens"));
+          mensagensSalvas[index].visualizada = true;
+          localStorage.setItem("mensagens", JSON.stringify(mensagensSalvas));
+          carregarMensagens();
+        }
+      }
+
+      function excluirMensagem(index) {
+        var confirmar = confirm("Deseja realmente excluir esta mensagem?");
+        if (confirmar) {
+          var mensagensSalvas = JSON.parse(localStorage.getItem("mensagens"));
+          mensagensSalvas.splice(index, 1);
+          localStorage.setItem("mensagens", JSON.stringify(mensagensSalvas));
+          carregarMensagens();
+        }
+      }
+
+      $(document).ready(function () {
+        carregarMensagens();
+      });
+    </script>
+  </body>
+</html>
